@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin: 10px 0 5px;
+        }
+
+        input,
+        textarea {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            margin: 20px 0;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #575757;
+        }
+
+        button:disabled {
+            background-color: gray;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Edit User</h2>
+        <form id="edit-form">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="yourMobileNumber">Mobile Number</label>
+            <input type="text" id="yourMobileNumber" name="yourMobileNumber" required>
+
+            <label for="chitName">Chit Name</label>
+            <input type="text" id="chitName" name="chitName">
+
+            <label for="chitType">Chit Type</label>
+            <input type="text" id="chitType" name="chitType">
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password">
+
+            <label for="nomineeName">Nominee Name</label>
+            <input type="text" id="nomineeName" name="nomineeName">
+
+            <label for="nomineeAddress">Nominee Address</label>
+            <textarea id="nomineeAddress" name="nomineeAddress"></textarea>
+
+            <label for="nomineeMobileNumber">Nominee Mobile Number</label>
+            <input type="text" id="nomineeMobileNumber" name="nomineeMobileNumber">
+
+            <label for="nomineeAadharProof">Nominee Aadhar Proof</label>
+            <input type="text" id="nomineeAadharProof" name="nomineeAadharProof">
+
+            <label for="nomineePanCard">Nominee Pan Card</label>
+            <input type="text" id="nomineePanCard" name="nomineePanCard">
+
+            <label for="accountNumber">Account Number</label>
+            <input type="text" id="accountNumber" name="accountNumber">
+
+            <label for="ifscCode">IFSC Code</label>
+            <input type="text" id="ifscCode" name="ifscCode">
+
+            <label for="yourAddress">Your Address</label>
+            <textarea id="yourAddress" name="yourAddress"></textarea>
+
+            <label for="yourAadharProof">Your Aadhar Proof</label>
+            <input type="text" id="yourAadharProof" name="yourAadharProof">
+
+            <label for="yourPanCard">Your Pan Card</label>
+            <input type="text" id="yourPanCard" name="yourPanCard">
+
+            <button type="submit">Update User</button>
+        </form>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-database.js"></script>
+    <script>
+        // Firebase project configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyCBwd_D0GQKTHVEQN70rRtnnPoc5L6MQOs",
+        authDomain: "vcfs-cd728.firebaseapp.com",
+        databaseURL: "https://vcfs-cd728-default-rtdb.firebaseio.com",
+        projectId: "vcfs-cd728",
+        storageBucket: "vcfs-cd728.appspot.com",
+        messagingSenderId: "744948157621",
+        appId: "1:744948157621:web:39374c75d27aca983902fc"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Reference to "Users" node in the database
+        var usersRef = firebase.database().ref("Users");
+
+        // Get the userId from the URL
+        var urlParams = new URLSearchParams(window.location.search);
+        var userId = urlParams.get('userId');
+
+        // Get the form element
+        var editForm = document.getElementById('edit-form');
+
+        // Function to load user data
+        function loadUserData(userId) {
+            usersRef.child(userId).once('value', function (snapshot) {
+                var userData = snapshot.val();
+
+                // Populate the form with user data
+                editForm.name.value = userData.name || '';
+                editForm.email.value = userData.email || '';
+                editForm.yourMobileNumber.value = userData.yourMobileNumber || '';
+                editForm.chitName.value = userData.chitName || '';
+                editForm.chitType.value = userData.chitType || '';
+                editForm.password.value = userData.password || '';
+                editForm.nomineeName.value = userData.nomineeName || '';
+                editForm.nomineeAddress.value = userData.nomineeAddress || '';
+                editForm.nomineeMobileNumber.value = userData.nomineeMobileNumber || '';
+                editForm.nomineeAadharProof.value = userData.nomineeAadharProof || '';
+                editForm.nomineePanCard.value = userData.nomineePanCard || '';
+                editForm.accountNumber.value = userData.accountNumber || '';
+                editForm.ifscCode.value = userData.ifscCode || '';
+                editForm.yourAddress.value = userData.yourAddress || '';
+                editForm.yourAadharProof.value = userData.yourAadharProof || '';
+                editForm.yourPanCard.value = userData.yourPanCard || '';
+            });
+        }
+
+        // Function to update user data
+        function updateUserData(userId, userData) {
+            usersRef.child(userId).update(userData, function (error) {
+                if (error) {
+                    alert('Error updating data: ' + error.message);
+                } else {
+                    alert('User data updated successfully!');
+                    window.location.href = 'index.html'; // Redirect to the user list page
+                }
+            });
+        }
+
+        // Load user data when the page loads
+        window.onload = function () {
+            loadUserData(userId);
+        };
+
+        // Handle form submission
+        editForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Get the updated user data from the form
+            var updatedUserData = {
+                name: editForm.name.value,
+                email: editForm.email.value,
+                yourMobileNumber: editForm.yourMobileNumber.value,
+                chitName: editForm.chitName.value,
+                chitType: editForm.chitType.value,
+                password: editForm.password.value,
+                nomineeName: editForm.nomineeName.value,
+                nomineeAddress: editForm.nomineeAddress.value,
+                nomineeMobileNumber: editForm.nomineeMobileNumber.value,
+                nomineeAadharProof: editForm.nomineeAadharProof.value,
+                nomineePanCard: editForm.nomineePanCard.value,
+                accountNumber: editForm.accountNumber.value,
+                ifscCode: editForm.ifscCode.value,
+                yourAddress: editForm.yourAddress.value,
+                yourAadharProof: editForm.yourAadharProof.value,
+                yourPanCard: editForm.yourPanCard.value
+            };
+
+            // Update the user data in Firebase
+            updateUserData(userId, updatedUserData);
+        });
+    </script>
+</body>
+
+</html>

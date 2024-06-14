@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Management</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        /* Group Card Styles */
+        .group-card {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            padding: 30px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .group-card p {
+            margin: 5px 0;
+        }
+
+        .group-card button {
+            margin-top: 5px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 30px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .group-card button:hover {
+            background-color: #0056b3;
+        }
+
+        .group-card input[type="text"] {
+            width: 200px;
+            margin-right: 10px;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .group-card input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* Hidden Element Styles */
+        .hidden {
+            display: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 60px;
+            border-radius: 30px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Form Styles */
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 8px 15px;
+            width: 100%;
+            border: none;
+            border-radius: 30px;
+            background-color: #acd3fc;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Container Styles */
+        .user-item {
+            margin-bottom: 5px; /* Add space between each user item */
+        }
+
+        /* Checkbox Styles */
+        .user-item input[type="checkbox"] {
+            margin-right: 5px; /* Add some space between checkbox and label */
+        }
+
+        /* Label Styles */
+        .user-item label[for^="user"] {
+            display: inline-block; /* Ensure the label is displayed in a block */
+            margin-left: 5px; /* Add some space between checkbox and label */
+            font-weight: normal; /* Adjust label font weight if needed */
+            color: #cc1c1c; /* Set label text color */
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 30px;
+            align-items: center;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 30px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+        }
+
+        .title {
+            margin: 0;
+        }
+
+        .content {
+            padding: 20px;
+        }
+        
+        
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <a href="index.html" class="back">Back</a>
+            <h4 class="title">Group Management</h4>
+        </div>
+    </header>
+    <div class="content">
+        <div id="groupList"></div>
+        <button onclick="toggleAddGroupForm()">Add New Group</button>
+        <div id="addGroupForm" class="hidden">
+            <h3>Add New Group</h3>
+            <form id="addGroupForm">
+                <label for="groupName">Group Name:</label>
+                <input type="text" id="groupName" name="groupName" required>
+                <button type="button" onclick="addGroup()">Add Group</button>
+            </form>
+        </div>
+
+        <div id="addMemberModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3>Select Members to Add</h3>
+                <div id="userList"></div>
+                <button onclick="addMembersToGroup()" style="width: 800px;">Add Selected Members</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-database.js"></script>
+    <script>
+        // Initialize Firebase
+        var firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "vcfs-cd728.firebaseapp.com",
+            databaseURL: "https://vcfs-cd728-default-rtdb.firebaseio.com",
+            projectId: "vcfs-cd728",
+            storageBucket: "vcfs-cd728.appspot.com",
+            messagingSenderId: "744948157621",
+            appId: "1:744948157621:web:39374c75d27aca983902fc"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        var database = firebase.database();
+        var selectedGroupId = null;
+        var selectedGroupName = null;
+
+        // Function to fetch and display group list
+        function displayGroupList() {
+            var groupList = document.getElementById('groupList');
+
+            // Clear existing group list
+            groupList.innerHTML = '';
+
+            // Reference to the 'groups' node in the database
+            var groupsRef = database.ref('groups');
+
+            // Fetch group data from the database
+            groupsRef.once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    var groupData = childSnapshot.val();
+                    var groupId = childSnapshot.key;
+                    var groupName = groupData.name; // Assuming 'name' is the field containing the group's name
+
+                    // Create group card to display group details
+                    var groupCard = document.createElement('div');
+                    groupCard.className = 'group-card';
+                    groupCard.innerHTML = `
+                        <p><strong>Name:</strong> ${groupName}</p>
+                        <button onclick="toggleEditGroupForm('${groupId}', '${groupName}')">Edit</button>
+                        <button onclick="deleteGroup('${groupId}')">Delete</button>
+                        <button onclick="openAddMemberModal('${groupId}', '${groupName}')">Add</button>
+                        <div id="editGroupForm_${groupId}" class="hidden">
+                            <br>
+                            <label for="editGroupName_${groupId}">Edit Group Name:</label>
+                            <input type="text" id="editGroupName_${groupId}" name="editGroupName_${groupId}" value="${groupName}" required>
+                            <button onclick="editGroup('${groupId}')">Save Changes</button>
+                        </div>
+                    `;
+                    groupList.appendChild(groupCard);
+                });
+            });
+        }
+
+        // Display group list initially
+        displayGroupList();
+
+        // Function to toggle visibility of add group form
+        function toggleAddGroupForm() {
+            var addGroupForm = document.getElementById('addGroupForm');
+            addGroupForm.classList.toggle('hidden');
+        }
+
+        // Function to toggle visibility of edit group form
+        function toggleEditGroupForm(groupId, groupName) {
+            var editGroupForm = document.getElementById('editGroupForm_' + groupId);
+            editGroupForm.classList.toggle('hidden');
+        }
+
+        // Function to open add member modal
+                // Function to open add member modal
+                function openAddMemberModal(groupId, groupName) {
+                    selectedGroupId = groupId;
+                    selectedGroupName = groupName;
+                    var modal = document.getElementById('addMemberModal');
+                    modal.style.display = "block";
+                    displayUserList();
+                }
+        
+                // Function to close the modal
+                function closeModal() {
+                    var modal = document.getElementById('addMemberModal');
+                    modal.style.display = "none";
+                }
+        
+                // Function to display user list
+                function displayUserList() {
+                    var userList = document.getElementById('userList');
+        
+                    // Clear existing user list
+                    userList.innerHTML = '';
+        
+                    // Reference to the 'users' node in the database
+                    var usersRef = database.ref('Users');
+        
+                    // Fetch user data from the database
+                    usersRef.once('value', function(snapshot) {
+                        snapshot.forEach(function(childSnapshot) {
+                            var userData = childSnapshot.val();
+                            var userId = childSnapshot.key;
+                            var userName = userData.name; // Assuming 'name' is the field containing the user's name
+                            var chitType = userData.chitType; // Assuming 'chitType' is the field containing the user's chit type
+                            var groupCategory = userData.groupCategory; // Assuming 'groupCategory' is the field containing the user's group category
+        
+                            // Check if the user does not have a groupCategory assigned (i.e., not already in a group)
+                            if (!groupCategory) {
+                                // Create checkbox for each user
+                                var userItem = document.createElement('div');
+                                userItem.innerHTML = `
+                                    <input type="checkbox" id="${userId}" name="user" value="${userId}">
+                                    <label for="${userId}">${userName} (${chitType})</label>
+                                `;
+                                userList.appendChild(userItem);
+                            }
+                        });
+                    });
+                }
+        
+                // Function to add selected members to the group
+                function addMembersToGroup() {
+                    var selectedUsers = document.querySelectorAll('input[name="user"]:checked');
+                    var groupMembersRef = database.ref('groups/' + selectedGroupId + '/members');
+                    var groupCategory = document.getElementById('groupName').value; // Get the group name from the input field
+        
+                    var promises = [];
+                    selectedUsers.forEach(function(user) {
+                        var userId = user.value;
+                        var userPromise = groupMembersRef.push(userId); // Add the user to the group members
+                        promises.push(userPromise);
+        
+                        // Update the groupCategory field in the user data
+                        var userRef = database.ref('Users/' + userId);
+                        userRef.update({
+                            groupCategory: groupCategory
+                        }).then(function() {
+                            console.log('Group category added to user ' + userId);
+                        }).catch(function(error) {
+                            console.error('Error adding group category to user ' + userId + ':', error);
+                        });
+                    });
+        
+                    Promise.all(promises).then(function() {
+                        console.log('Members added successfully to group ID: ' + selectedGroupId);
+                        // Optionally, you can refresh the group list or display a message
+                        displayGroupList();
+                        closeModal();
+                    }).catch(function(error) {
+                        console.error('Error adding members to group:', error);
+                        // Optionally, you can display an error message to the user
+                    });
+                }
+        
+                // Function to add a new group
+                function addGroup() {
+                    var groupName = document.getElementById('groupName').value;
+                    var groupsRef = database.ref('groups');
+        
+                    groupsRef.push({
+                        name: groupName
+                    }).then(function() {
+                        console.log('Group added successfully');
+                        displayGroupList();
+                        toggleAddGroupForm();
+                    }).catch(function(error) {
+                        console.error('Error adding group:', error);
+                    });
+                }
+        
+                // Function to edit a group
+                function editGroup(groupId) {
+                    var editGroupName = document.getElementById('editGroupName_' + groupId).value;
+                    var groupRef = database.ref('groups/' + groupId);
+        
+                    groupRef.update({
+                        name: editGroupName
+                    }).then(function() {
+                        console.log('Group updated successfully');
+                        displayGroupList();
+                    }).catch(function(error) {
+                        console.error('Error updating group:', error);
+                    });
+                }
+        
+                // Function to delete a group
+                function deleteGroup(groupId) {
+                    var groupRef = database.ref('groups/' + groupId);
+        
+                    groupRef.remove().then(function() {
+                        console.log('Group deleted successfully');
+                        displayGroupList();
+                    }).catch(function(error) {
+                        console.error('Error deleting group:', error);
+                    });
+                }
+            </script>
+        </body>
+        </html>
+        

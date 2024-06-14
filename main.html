@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Overview</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap">
+    <style>
+        /* Add your CSS here */
+        html {
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+        
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #4a90e2;
+            padding: 10px 20px;
+            color: white;
+        }
+        
+        .navbar .logo img {
+            height: 40px;
+        }
+        
+        .navbar .menu {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #4a90e2;
+            position: absolute;
+            top: 60px;
+            right: 0;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .navbar .menu.open {
+            display: flex;
+        }
+        
+        .navbar .menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+        }
+        
+        .navbar .menu a:hover {
+            text-decoration: underline;
+            background-color: #357ab7;
+        }
+        
+        .profile {
+            position: relative;
+        }
+        
+        .profile img {
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-top: 20px;
+            margin: 10px 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-bar h2 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .search-bar input {
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            font-size: 16px;
+           
+            margin-left: 14px;
+        }
+        
+        table {
+            max-width: 1000px;
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            padding: 0 10px; /* Added padding for better spacing on mobile */
+        }
+        
+        thead {
+            background-color: #4a90e2;
+            color: white;
+        }
+        
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            font-weight: 700;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .actions button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .edit-button {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .edit-button:hover {
+            background-color: #45a049;
+        }
+        
+        .delete-button {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .delete-button:hover {
+            background-color: #e53935;
+        }
+
+        .more-button {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .more-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            border: none;
+            background-color: #4a90e2;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .pagination button:hover {
+            background-color: #357ab7;
+        }
+        
+        .pagination button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 600px) {
+            .navbar .menu {
+                display: none;
+            }
+        
+            .navbar .menu.open {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+        
+            .navbar .menu a {
+                padding: 10px 0;
+                text-align: center;
+            }
+        
+            .menu-btn {
+                display: block;
+                background-color: #4a90e2;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                border-radius: 8px;
+                margin-bottom: 10px; /* Added margin for better spacing */
+            }
+        
+            .menu-btn:hover {
+                background-color: #357ab7;
+            }
+        
+            .main-content {
+                padding: 10px;
+            }
+        
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        
+            th,
+            td {
+                display: block;
+                text-align: right;
+            }
+        
+            th {
+                background-color: transparent;
+                font-weight: 700;
+            }
+        
+            th::before {
+                content: attr(data-label);
+                float: left;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+        
+            td::before {
+                content: attr(data-label);
+                float: left;
+                text-transform: uppercase;
+                font-weight: 500;
+            }
+        
+            .actions {
+                text-align: center;
+            }
+        
+            .user-data-container {
+                overflow-x:auto;
+            }
+        
+            thead,
+            .user-bar {
+                display:none;
+            }
+        }
+
+        .back {
+            position: absolute;
+            top: 10px; /* Adjust the top position */
+            left: 15px; /* Adjust the right position */
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            background-color: #8ec4ff;
+        }
+        
+        .back:hover {
+            background-color: #0056b3;
+        }
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 8px 20px;
+            display: flex;
+            margin-top: 8px;
+            justify-content: space-between;
+            border-radius: 30px;
+            align-items: center;
+            margin: 15px 15px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: transparent;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 13px;
+            margin-left: 5px;
+            border-radius: 30px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+        }
+
+        .title {
+            margin: 0;
+            position:fixed;
+            right: 30px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+        /* Modal styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black with opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Close button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+        
+    </style>
+</head>
+<body>
+
+<header>
+        <div class="navbar">
+            <a href="index.html" class="back">Back</a>
+            <h4 class="title">User Overview</h4>
+        </div>
+    </header>
+
+<div class="main-content container">
+    <div class="user-bar">
+        <h2 id="username">Firebase Users Data Display</h2>
+    </div>
+    <div class="search-bar">
+        <input type="search" id="search" placeholder="Search">
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Mobile Number</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody class="user-data-container" id="users-container">
+            <!-- User data will be dynamically added here --><br>
+        </tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Modal -->
+<div id="userModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p>User Details:</p>
+    <div id="userDetails"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-database.js"></script>
+<script>
+    var firebaseConfig = {
+        apiKey: "AIzaSyCBwd_D0GQKTHVEQN70rRtnnPoc5L6MQOs",
+        authDomain: "vcfs-cd728.firebaseapp.com",
+        databaseURL: "https://vcfs-cd728-default-rtdb.firebaseio.com",
+        projectId: "vcfs-cd728",
+        storageBucket: "vcfs-cd728.appspot.com",
+        messagingSenderId: "744948157621",
+        appId: "1:744948157621:web:39374c75d27aca983902fc"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    var usersRef = firebase.database().ref("Users");
+    var usersPerPage = 10;
+    var currentPage = 1;
+
+    function createUserCard(userId, userData) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td data-label="Name">${userData.name}</td>
+            <td data-label="Email">${userData.email}</td>
+            <td data-label="Mobile Number">${userData.yourMobileNumber}</td>
+            <td data-label="Actions" class="actions">
+                <button class="edit-button" onclick="editUser('${userId}')">Edit</button>
+                <button class="delete-button" onclick="deleteUser('${userId}')">Delete</button>
+                <button class="more-button" onclick="showDetails('${userId}')">More</button>
+            </td>
+        `;
+        return tr;
+    }
+
+    function updateCards(snapshot) {
+        var usersContainer = document.getElementById("users-container");
+        usersContainer.innerHTML = '';
+
+        var usersArray = [];
+        snapshot.forEach(function (childSnapshot) {
+            var userId = childSnapshot.key;
+            var userData = childSnapshot.val();
+            usersArray.push({ userId: userId, userData: userData });
+        });
+
+        var start = (currentPage - 1) * usersPerPage;
+        var end = start + usersPerPage;
+        var paginatedUsers = usersArray.slice(start, end);
+
+        paginatedUsers.forEach(function (user) {
+            var tr = createUserCard(user.userId, user.userData);
+            usersContainer.appendChild(tr);
+        });
+
+        createPagination(usersArray.length);
+    }
+
+    function createPagination(totalUsers) {
+        var pagination = document.getElementById("pagination");
+        pagination.innerHTML = '';
+
+        var totalPages = Math.ceil(totalUsers / usersPerPage);
+
+        for (var i = 1; i <= totalPages; i++) {
+            var button = document.createElement("button");
+            button.innerText = i;
+            button.onclick = function () {
+                currentPage = parseInt(this.innerText);
+                usersRef.once("value", updateCards);
+            };
+            if (i === currentPage) {
+                button.disabled = true;
+            }
+            pagination.appendChild(button);
+        }
+    }
+
+    usersRef.on("value", function (snapshot) {
+        updateCards(snapshot);
+    }, function (error) {
+        var errorMessageElement = document.getElementById("error-message");
+        errorMessageElement.textContent = "Error fetching data: " + error.message;
+    });
+
+    function toggleMenu() {
+        var menu = document.querySelector('.menu');
+        menu.classList.toggle('open');
+    }
+
+    function editUser(userId) {
+        window.location.href = `edit.html?userId=${userId}`;
+    }
+
+    function deleteUser(userId) {
+        if (confirm('Are you sure you want to delete this user?')) {
+            usersRef.child(userId).remove();
+        }
+    }
+
+    function showDetails(userId) {
+        var userDetailsDiv = document.getElementById('userDetails');
+        userDetailsDiv.innerHTML = ''; // Clear previous content
+
+        usersRef.child(userId).once('value', function(snapshot) {
+            var userData = snapshot.val();
+            userDetailsDiv.innerHTML = `
+                <p><strong>Name:</strong> ${userData.name}</p>
+                <p><strong>Email:</strong> ${userData.email}</p>
+                <p><strong>Mobile Number:</strong> ${userData.yourMobileNumber}</p>
+                    <p class="card-text"><strong>Nominee Name: </strong>${userData.nomineeName}</p>
+                    <p class="card-text"><strong>Chit Name: </strong>${userData.chitName}</p>
+                    <p class="card-text"><strong>Nominee Mobile:</strong> ${userData.nomineeMobileNumber}</p>
+                    <p class="card-text"><strong>Account Number:</strong> ${userData.accountNumber}</p>
+                    <p class="card-text"><strong>IFSC Code: </strong>${userData.ifscCode}</p>
+                    <p class="card-text"><strong>Your Address:</strong> ${userData.yourAddress}</p>
+                    <p class="card-text"><strong>Nominee Address:</strong> ${userData.nomineeAddress}</p>
+                    <p class="card-text"><strong>Your Aadhar:</strong>${userData.yourAadharProof}</p>
+                    <p class="card-text"><strong>Nominee Aadhar:</strong>${userData.nomineeAadharProof}</p>
+                    <p class="card-text"><strong>Your Pancard: </strong>${userData.yourPanCard}</p>
+                    <p class="card-text"><strong>Nominee Pancard:</strong>${userData.nomineePanCard}</p>
+            `;
+        });
+
+        // Show the modal
+        var modal = document.getElementById('userModal');
+        modal.style.display = "block";
+
+        // When the user clicks on <span> (x), close the modal
+        var span = document.getElementsByClassName("close")[0];
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
+
+    // Function to search users by alphabet
+    function searchUsers() {
+        var searchInput = document.getElementById("search").value.toLowerCase();
+
+        // Check if search input matches specific keywords
+        if (searchInput === "due") {
+            window.location.href = "add_due_amount.html";
+            return;
+        } else if (searchInput === "group") {
+            window.location.href = "group_management.html";
+            return;
+        }
+            else if (searchInput === "register") {
+                window.location.href = "register_user.html";
+                return;
+        }
+
+        var usersContainer = document.getElementById("users-container");
+        usersContainer.innerHTML = '';
+
+        // Filter users based on the search input
+        usersRef.once("value", function(snapshot) {
+            snapshot.forEach(function(childSnapshot) {
+                var userId = childSnapshot.key;
+                var userData = childSnapshot.val();
+                var userName = userData.name.toLowerCase();
+                if (userName.includes(searchInput)) {
+                    var tr = createUserCard(userId, userData);
+                    usersContainer.appendChild(tr);
+                }
+            });
+        });
+    }
+
+    // Event listener for the search input
+    document.getElementById("search").addEventListener("input", function() {
+        searchUsers();
+    });
+</script>
+
+</body>
+</html>
+

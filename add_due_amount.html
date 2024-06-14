@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Due Amount</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 10px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 50px;
+            align-items: center;
+            margin-top: 10px;
+            margin: 15px 15px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 30px;
+            margin-left: -20px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 18px;
+            position: fixed;
+            right: 25px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+        
+        .title {
+            margin-left: 20px; /* Adjust the margin */
+        }
+        
+        .user-card {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px; /* Increase padding for better spacing */
+            margin: 10px 10px;
+            margin-bottom: 20px; /* Increase margin-bottom for better separation */
+            
+        }
+        
+        .user-card p {
+            margin: 10px 0; /* Adjust paragraph margin for better spacing */
+        }
+        
+        .user-card button {
+            margin-top: 10px; /* Increase margin-top for better spacing */
+            padding: 8px 16px; /* Increase padding for better button size */
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        
+        .user-card button:hover {
+            background-color: #0056b3;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .user-card input[type="number"] {
+            width: 100px;
+            margin-right: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        
+        .user-card input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .back {
+            color: #fff;
+            text-decoration: none;
+            padding: 5px 16px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 30px;
+            margin-left: -2px;
+            transition: background-color 0.3s;
+        }
+        
+        .back:hover {
+            background-color: #0056b3;
+        }
+        
+    </style>
+</head>
+<body>
+    <header>
+        <h4 class="title">Due Management</h4>
+        <a href="index.html" class="back">Back</a>
+    </header>
+    
+    <div id="userList"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-database.js"></script>
+    <script>
+        // Initialize Firebase
+        var firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "vcfs-cd728.firebaseapp.com",
+            databaseURL: "https://vcfs-cd728-default-rtdb.firebaseio.com",
+            projectId: "vcfs-cd728",
+            storageBucket: "vcfs-cd728.appspot.com",
+            messagingSenderId: "744948157621",
+            appId: "1:744948157621:web:39374c75d27aca983902fc"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        var database = firebase.database();
+
+        // Function to fetch and display user list with due amount
+        function displayUserList() {
+            var userList = document.getElementById('userList');
+
+            // Clear existing user list
+            userList.innerHTML = '';
+
+            // Reference to the 'Users' node in the database
+            var usersRef = database.ref('Users');
+
+            // Fetch user data from the database
+            usersRef.once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    var userData = childSnapshot.val();
+                    var userId = childSnapshot.key;
+                    var userName = userData.name; // Assuming 'name' is the field containing the user's name
+                    var dueAmount = userData.dueAmount || 0;
+                    var balanceAmount = userData.balanceAmount || 0;
+
+                    // Create user card to display user details
+                    var userCard = document.createElement('div');
+                    userCard.className = 'user-card';
+                    userCard.innerHTML = `
+                        <p><strong>Name:</strong> ${userName}</p>
+                        <p><strong>Due Amount:</strong> ${getDisplayAmount(dueAmount)}</p>
+                        <p><strong>Balance Amount:</strong> ${getDisplayAmount(balanceAmount)}</p>
+                        <button onclick="toggleTextBox('${userId}')">Add Due Amount</button>
+                        <div id="textBox_${userId}" class="hidden">
+                            <label for="dueAmount_${userId}">Enter Due Amount:</label>
+                            <input type="number" id="dueAmount_${userId}" name="dueAmount_${userId}" required>
+                            <button onclick="addDueAmount('${userId}')">Add</button>
+                        </div>
+                        <button onclick="markAsPaid('${userId}')">Paid</button>
+                        <button onclick="updateDueAmount('${userId}', 'Pending')">Pending</button>
+                        <button onclick="updateDueAmount('${userId}', 'Failed')">Failed</button>
+                        <button onclick="updateDueAmount('${userId}', 'Request Rechecking')">Request Rechecking</button>
+                    `;
+                    userList.appendChild(userCard);
+                });
+            });
+        }
+
+        // Display user list with due amount initially
+        displayUserList();
+
+        // Function to toggle visibility of text box for adding due amount
+        function toggleTextBox(userId) {
+            var textBox = document.getElementById('textBox_' + userId);
+            textBox.classList.toggle('hidden');
+        }
+
+        // Function to add due amount for a specific user
+        function addDueAmount(userId) {
+            var dueAmountInput = document.getElementById('dueAmount_' + userId);
+            var newDueAmount = parseInt(dueAmountInput.value);
+
+            // Referenceto the user's data in the database
+var userRef = database.ref('Users/' + userId);
+        // Update the database with the new due amount
+        userRef.update({
+            dueAmount: newDueAmount
+        }).then(function() {
+            console.log('Due amount updated successfully for user ID: ' + userId);
+            // Refresh user list to reflect changes
+            displayUserList();
+        }).catch(function(error) {
+            console.error('Error updating due amount:', error);
+            // Optionally, you can display an error message to the user
+        });
+
+        // Reset the input field
+        dueAmountInput.value = '';
+    }
+
+    // Function to mark due amount as paid and update the balance amount
+    function markAsPaid(userId) {
+        // Reference to the user's data in the database
+        var userRef = database.ref('Users/' + userId);
+
+        // Fetch current balance and due amount
+        userRef.once('value', function(snapshot) {
+            var userData = snapshot.val();
+            var currentBalance = userData.balanceAmount || 0;
+            var dueAmount = userData.dueAmount || 0;
+            var userName = userData.name;
+
+            // Subtract due amount from balance
+            var updatedBalance = currentBalance - dueAmount;
+
+            // Store paid details in 'paids' node
+            var paidsRef = database.ref('paids');
+            var paidDetails = {
+                userId: userId,
+                userName: userName,
+                paidAmount: dueAmount,
+                balanceAmountBefore: currentBalance,
+                balanceAmountAfter: updatedBalance,
+                paidDate: new Date().toISOString()
+            };
+            paidsRef.push(paidDetails);
+
+            // Update the database with the new balance amount and set due amount to 0
+            userRef.update({
+                balanceAmount: updatedBalance,
+                dueAmount: 0
+            }).then(function() {
+                console.log('Due amount marked as paid successfully for user ID: ' + userId);
+                // Refresh user list to reflect changes
+                displayUserList();
+            }).catch(function(error) {
+                console.error('Error updating due amount:', error);
+                // Optionally, you can display an error message to the user
+            });
+        });
+    }
+
+    // Function to update due amount status in the database
+    function updateDueAmount(userId, status) {
+        // Reference to the user's data in the database
+        var userRef = database.ref('Users/' + userId);
+
+        // Update the database with the new due amount status
+        userRef.update({
+            dueAmount: status
+        }).then(function() {
+            console.log('Due amount status updated successfully for user ID: ' + userId);
+            // Refresh user list to reflect changes
+            displayUserList();
+        }).catch(function(error) {
+            console.error('Error updating due amount status:', error);
+            // Optionally, you can display an error message to the user
+        });
+    }
+
+    // Function to format amount for display
+    function getDisplayAmount(amount) {
+        if (typeof amount === 'number') {
+            return '$' + amount.toFixed(2);
+        }
+        return amount;
+    }
+</script>
+
